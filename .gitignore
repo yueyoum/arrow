@@ -1,0 +1,10 @@
+*.beam
+*.swp
+*.bak
+*.log
+*.iml
+
+ebin
+.idea
+.rebar
+.eunit
