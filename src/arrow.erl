@@ -131,20 +131,26 @@ in({D1Start, D1End}, D2) ->
 %% @doc
 %% Add Years to Input Datetime
 %% @end
-add_years({{Year, Month, Day}, _Time}, Years) ->
-    {{Year+ Years, Month, Day}, _Time}.
+-spec add_years(arrow_datetime(), integer()) -> calendar:datetime().
+add_years(Datetime, Years) ->
+    {{Year, Month, Day}, Time} = arrow:get(Datetime),
+    {{Year + Years, Month, Day}, Time}.
 
 %% @doc
 %% Add Months to Input Datetime
 %% @end
-add_months({{Year, Month, _Day}, _Time} = Datetime, Months) ->
+-spec add_months(arrow_datetime(), integer()) -> calendar:datetime().
+add_months(Datetime, Months) ->
+    {{Year, Month, _Day}, _Time} = arrow:get(Datetime),
     AddDay = do_add_months(Months, 0, {Year, Month, 0}),
     add_days(Datetime, AddDay).
 
 %% @doc
 %% Add Days to Input Datetime
 %% @end
-add_days({Date, Time}, Days) ->
+-spec add_days(arrow_datetime(), integer()) -> calendar:datetime().
+add_days(Datetime, Days) ->
+    {Date, Time} = arrow:get(Datetime),
     TotalDays = calendar:date_to_gregorian_days(Date) + Days,
     NewDate = calendar:gregorian_days_to_date(TotalDays),
     {NewDate, Time}.
@@ -152,20 +158,24 @@ add_days({Date, Time}, Days) ->
 %% @doc
 %% Add Hours to Input Datetime
 %% @end
+-spec add_hours(arrow_datetime(), integer()) -> calendar:datetime().
 add_hours(Datetime, Hours) ->
     add_seconds(Datetime, Hours*3600).
 
 %% @doc
 %% Add Minutes to Input Datetime
 %% @end
+-spec add_minutes(arrow_datetime(), integer()) -> calendar:datetime().
 add_minutes(Datetime, Minutes) ->
     add_seconds(Datetime, Minutes*60).
 
 %% @doc
 %% Add Seconds to Input Datetime
 %% @end
+-spec add_seconds(arrow_datetime(), integer()) -> calendar:datetime().
 add_seconds(Datetime, AddSecond) ->
-    TotalSeconds = calendar:datetime_to_gregorian_seconds(Datetime) + AddSecond,
+    DatetimeNormalized = arrow:get(Datetime),
+    TotalSeconds = calendar:datetime_to_gregorian_seconds(DatetimeNormalized) + AddSecond,
     calendar:gregorian_seconds_to_datetime(TotalSeconds).
 
 %%% ====================================================
@@ -269,7 +279,11 @@ add_years_test_() ->
         ?_assertEqual(add_years({{2015, 1, 1}, {0, 0, 0}}, 1000), {{3015, 1, 1}, {0, 0, 0}}),
         ?_assertEqual(add_years({{1970, 1, 1}, {0, 0, 0}}, -100), {{1870, 1, 1}, {0, 0, 0}}),
         ?_assertEqual(add_years({{2015, 1, 1}, {0, 0, 0}}, -1000), {{1015, 1, 1}, {0, 0, 0}}),
-        ?_assertEqual(add_years({{2345, 1, 1}, {0, 0, 0}}, -345), {{2000, 1, 1}, {0, 0, 0}})
+        ?_assertEqual(add_years({{2345, 1, 1}, {0, 0, 0}}, -345), {{2000, 1, 1}, {0, 0, 0}}),
+
+        ?_assertEqual(add_years(11833862400, -345), {{2000, 1, 1}, {0, 0, 0}}),
+        ?_assertEqual(add_years("2345-01-01 00:00:00", -345), {{2000, 1, 1}, {0, 0, 0}}),
+        ?_assertEqual(add_years(<<"2345-01-01 00:00:00">>, -345), {{2000, 1, 1}, {0, 0, 0}})
     ].
 
 add_months_test_() ->
@@ -281,7 +295,11 @@ add_months_test_() ->
         ?_assertEqual(add_months({{2015, 3, 26}, {0, 0, 0}}, -67), {{2009, 8, 26}, {0, 0, 0}}),
         ?_assertEqual(add_months({{2015, 3, 31}, {0, 0, 0}}, -1), {{2015, 2, 28}, {0, 0, 0}}),
         ?_assertEqual(add_months({{2015, 3, 31}, {0, 0, 0}}, -181), {{2000, 2, 29}, {0, 0, 0}}),
-        ?_assertEqual(add_months({{2015, 3, 31}, {0, 0, 0}}, -9999), {{1181, 12, 31}, {0, 0, 0}})
+        ?_assertEqual(add_months({{2015, 3, 31}, {0, 0, 0}}, -9999), {{1181, 12, 31}, {0, 0, 0}}),
+
+        ?_assertEqual(add_months(1427760000, -9999), {{1181, 12, 31}, {0, 0, 0}}),
+        ?_assertEqual(add_months("2015-03-31 00:00:00", -9999), {{1181, 12, 31}, {0, 0, 0}}),
+        ?_assertEqual(add_months(<<"2015-03-31 00:00:00">>, -9999), {{1181, 12, 31}, {0, 0, 0}})
     ].
 
 add_days_test_() ->
@@ -291,5 +309,54 @@ add_days_test_() ->
         ?_assertEqual(add_days({{2015, 3, 26}, {0, 0, 0}}, 9999), {{2042, 8, 10}, {0, 0, 0}}),
         ?_assertEqual(add_days({{2015, 3, 1}, {0, 0, 0}}, -1), {{2015, 2, 28}, {0, 0, 0}}),
         ?_assertEqual(add_days({{2015, 3, 31}, {0, 0, 0}}, -181), {{2014, 10, 1}, {0, 0, 0}}),
-        ?_assertEqual(add_days({{2015, 3, 31}, {0, 0, 0}}, -9999), {{1987, 11, 14}, {0, 0, 0}})
+        ?_assertEqual(add_days({{2015, 3, 31}, {0, 0, 0}}, -9999), {{1987, 11, 14}, {0, 0, 0}}),
+
+        ?_assertEqual(add_days(1427760000, -9999), {{1987, 11, 14}, {0, 0, 0}}),
+        ?_assertEqual(add_days("2015-03-31 00:00:00", -9999), {{1987, 11, 14}, {0, 0, 0}}),
+        ?_assertEqual(add_days(<<"2015-03-31 00:00:00">>, -9999), {{1987, 11, 14}, {0, 0, 0}})
+    ].
+
+add_hours_test_() ->
+    [
+        ?_assertEqual(add_hours({{1970, 1, 1}, {0, 0, 0}}, 0), {{1970, 1, 1}, {0, 0, 0}}),
+        ?_assertEqual(add_hours({{1970, 1, 1}, {0, 0, 0}}, 100), {{1970, 1, 5}, {4, 0, 0}}),
+        ?_assertEqual(add_hours({{1970, 1, 1}, {0, 0, 0}}, 567), {{1970, 1, 24}, {15, 0, 0}}),
+        ?_assertEqual(add_hours({{2015, 3, 26}, {0, 0, 0}}, 9999), {{2016, 5, 15}, {15, 0, 0}}),
+        ?_assertEqual(add_hours({{2015, 3, 26}, {0, 0, 0}}, -67), {{2015, 3, 23}, {5, 0, 0}}),
+        ?_assertEqual(add_hours({{2015, 3, 31}, {0, 0, 0}}, -1), {{2015, 3, 30}, {23, 0, 0}}),
+        ?_assertEqual(add_hours({{2015, 3, 31}, {0, 0, 0}}, -9999), {{2014, 2, 7}, {9, 0, 0}}),
+        ?_assertEqual(add_hours({{2015, 3, 31}, {0, 0, 50}}, -999999), {{1901, 3, 2}, {9, 0, 50}}),
+
+        ?_assertEqual(add_hours(1427760050, -999999), {{1901, 3, 2}, {9, 0, 50}}),
+        ?_assertEqual(add_hours("2015-03-31 00:00:50", -999999), {{1901, 3, 2}, {9, 0, 50}}),
+        ?_assertEqual(add_hours(<<"2015-03-31 00:00:50">>, -999999), {{1901, 3, 2}, {9, 0, 50}})
+    ].
+
+add_minutes_test_() ->
+    [
+        ?_assertEqual(add_minutes({{1970, 1, 1}, {0, 0, 0}}, 0), {{1970, 1, 1}, {0, 0, 0}}),
+        ?_assertEqual(add_minutes({{1970, 1, 1}, {0, 0, 0}}, 100), {{1970, 1, 1}, {1, 40, 0}}),
+        ?_assertEqual(add_minutes({{1970, 1, 1}, {0, 0, 0}}, 567), {{1970, 1, 1}, {9, 27, 0}}),
+        ?_assertEqual(add_minutes({{2015, 3, 26}, {0, 0, 0}}, 9999), {{2015, 4, 1}, {22, 39, 0}}),
+        ?_assertEqual(add_minutes({{2015, 3, 26}, {0, 0, 0}}, -67), {{2015, 3, 25}, {22, 53, 0}}),
+        ?_assertEqual(add_minutes({{2015, 3, 31}, {0, 0, 0}}, -1), {{2015, 3, 30}, {23, 59, 0}}),
+        ?_assertEqual(add_minutes({{2015, 3, 31}, {0, 0, 0}}, -9999), {{2015, 3, 24}, {1, 21, 0}}),
+        ?_assertEqual(add_minutes({{2015, 3, 31}, {0, 0, 50}}, -99999999), {{1825, 2, 10}, {13, 21, 50}}),
+
+        ?_assertEqual(add_minutes(1427760050, -99999999), {{1825, 2, 10}, {13, 21, 50}}),
+        ?_assertEqual(add_minutes("2015-03-31 00:00:50", -99999999), {{1825, 2, 10}, {13, 21, 50}}),
+        ?_assertEqual(add_minutes(<<"2015-03-31 00:00:50">>, -99999999), {{1825, 2, 10}, {13, 21, 50}})
+    ].
+
+add_seconds_test_() ->
+    [
+        ?_assertEqual(add_seconds({{1970, 1, 1}, {0, 0, 0}}, 0), {{1970, 1, 1}, {0, 0, 0}}),
+        ?_assertEqual(add_seconds({{1970, 1, 1}, {0, 0, 0}}, 100), {{1970, 1, 1}, {0, 1, 40}}),
+        ?_assertEqual(add_seconds({{1970, 1, 1}, {0, 0, 0}}, 99999999), {{1973, 3, 3}, {9, 46, 39}}),
+        ?_assertEqual(add_seconds({{1970, 1, 1}, {0, 0, 0}}, -99999999), {{1966, 10, 31}, {14, 13, 21}}),
+        ?_assertEqual(add_seconds({{2015, 3, 31}, {0, 0, 0}}, -9999), {{2015, 3, 30}, {21, 13, 21}}),
+
+        ?_assertEqual(add_seconds(1427760000, -9999), {{2015, 3, 30}, {21, 13, 21}}),
+        ?_assertEqual(add_seconds("2015-03-31 00:00:00", -9999), {{2015, 3, 30}, {21, 13, 21}}),
+        ?_assertEqual(add_seconds(<<"2015-03-31 00:00:00">>, -9999), {{2015, 3, 30}, {21, 13, 21}})
     ].
