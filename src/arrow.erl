@@ -17,6 +17,7 @@
          get/0,
          get/1,
          diff/2,
+         compare/2,
          in/2,
          add_years/2,
          add_months/2,
@@ -100,7 +101,7 @@ get({{_, _, _}, {_, _, _}} = Datetime) ->
 diff(D1, D2) ->
     D1Seconds = timestamp(D1),
     D2Seconds = timestamp(D2),
-    calendar:datetime_to_gregorian_seconds(D1Seconds) - calendar:datetime_to_gregorian_seconds(D2Seconds).
+    D1Seconds - D2Seconds.
 
 
 %% @doc
@@ -117,11 +118,7 @@ compare(D1, D2) ->
 %% @doc
 %% Check whether D2 or D2Range is in D1Range.
 %% @end
--spec in(arrow_range(), arrow_datetime()) -> boolean();
-        (arrow_range(), arrow_range()) -> boolean().
-in({_D1Start, _D1End} = D1, {D2Start, D2End}) ->
-    in(D1, D2Start) andalso in(D1, D2End);
-
+-spec in(arrow_range(), arrow_datetime()) -> boolean().
 in({D1Start, D1End}, D2) ->
     CompareWithStart = compare(D2, D1Start),
     ComareWithEnd = compare(D2, D1End),
@@ -359,4 +356,30 @@ add_seconds_test_() ->
         ?_assertEqual(add_seconds(1427760000, -9999), {{2015, 3, 30}, {21, 13, 21}}),
         ?_assertEqual(add_seconds("2015-03-31 00:00:00", -9999), {{2015, 3, 30}, {21, 13, 21}}),
         ?_assertEqual(add_seconds(<<"2015-03-31 00:00:00">>, -9999), {{2015, 3, 30}, {21, 13, 21}})
+    ].
+
+diff_test_() ->
+    [
+        ?_assertEqual(diff({{1970, 1, 1}, {0, 0, 0}}, {{1971, 1, 1}, {0, 0, 0}}), -31536000),
+        ?_assertEqual(diff({{1970, 1, 1}, {0, 0, 0}}, "2345-02-09 10:11:11"), -11837268671),
+        ?_assertEqual(diff({{1970, 1, 1}, {0, 0, 0}}, -4604342400), 4604342400),
+        ?_assertEqual(diff(<<"2015-04-07 17:10:10">>, {{2000, 1, 1}, {9, 9, 9}}), 481708861)
+    ].
+
+compare_test_() ->
+    [
+        ?_assertEqual(compare({{1970, 1, 1}, {0, 0, 0}}, 0), 0),
+        ?_assertEqual(compare({{1970, 1, 1}, {0, 0, 0}}, "1970-01-01 00:00:01"), -1),
+        ?_assertEqual(compare({{1970, 1, 1}, {0, 0, 0}}, <<"1960-01-01 00:00:00">>), 1),
+        ?_assertEqual(compare(1428426854, {{1970, 1, 1}, {0, 0, 0}}), 1)
+    ].
+
+in_test_() ->
+    [
+        ?_assertEqual(in({ {{1970, 1, 1}, {0, 0, 0}}, {{1970, 1, 1}, {0, 0, 0}} }, {{1970, 1, 1}, {0, 0, 0}}), true),
+        ?_assertEqual(in({ {{1970, 1, 1}, {0, 0, 0}}, {{1970, 1, 2}, {0, 0, 0}} }, {{1970, 1, 3}, {0, 0, 0}}), false),
+        ?_assertEqual(in({ {{1970, 1, 1}, {0, 0, 0}}, 100 }, "1970-01-01 00:00:10"), true),
+        ?_assertEqual(in({ {{1970, 1, 1}, {0, 0, 0}}, 100 }, "1970-01-01 01:00:00"), false),
+        ?_assertEqual(in({ "1970-01-01 00:00:00", <<"2000-01-01 00:00:00">> }, 100), true),
+        ?_assertEqual(in({ "1970-01-01 00:00:00", <<"2000-01-01 00:00:00">> }, 955127654), false)
     ].
