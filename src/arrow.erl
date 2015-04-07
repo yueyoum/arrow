@@ -33,19 +33,30 @@
 
 -define(BASE_SECONDS, 62167219200).
 
+%% @doc
+%% Get Now with format `{MegaSecs, Secs, MicroSecs}'
+%% @end
 -spec now() -> erlang:timestamp().
 now() ->
     os:timestamp().
 
+%% @doc
+%% Get Now timestamp
+%% @end
 -spec timestamp() -> integer().
 timestamp() ->
     unix_timestamp(arrow:now()).
 
+%% @doc
+%% Get timestamp of given time
+%% @end
 -spec timestamp(arrow_datetime()) -> integer().
 timestamp(Datetime) ->
     unix_timestamp(arrow:get(Datetime)).
 
-
+%% @doc
+%% Format given time to format `YYYY-MM-DD HH:mm:ss'
+%% @end
 -spec format(Timestamp :: erlang:timestamp()) -> DateString :: nonempty_string();
             (Datetime :: calendar:datetime()) -> DateString :: nonempty_string().
 format(Timestamp) when is_integer(Timestamp)->
@@ -58,10 +69,16 @@ format({{Year, Month, Day}, {Hour, Minute, Second}}) ->
     lists:flatten(Text).
 
 
+%% @doc
+%% Get Current time as format `{{Year, Month, Day}, {Hour, Minute, Second}}'
+%% @end
 -spec get() -> calendar:datetime().
 get() ->
     calendar:universal_time().
 
+%% @doc
+%% Parse given time to format `{{Year, Month, Day}, {Hour, Minute, Second}}'
+%% @end
 -spec get(arrow_datetime()) -> calendar:datetime().
 get(Timestamp) when is_integer(Timestamp) ->
     unix_timestamp_to_datetime(Timestamp);
@@ -76,13 +93,19 @@ get(DateBinary) when is_binary(DateBinary) ->
 get({{_, _, _}, {_, _, _}} = Datetime) ->
     Datetime.
 
-
+%% @doc
+%% Diff seconds of D1 and D2. `D1 - D2'
+%% @end
 -spec diff(D1 :: arrow_datetime(), D2 :: arrow_datetime()) -> DiffSeconds :: integer().
 diff(D1, D2) ->
     D1Seconds = timestamp(D1),
     D2Seconds = timestamp(D2),
     calendar:datetime_to_gregorian_seconds(D1Seconds) - calendar:datetime_to_gregorian_seconds(D2Seconds).
 
+
+%% @doc
+%% Compare D1 and D2.
+%% @end
 -spec compare(D1 :: arrow_datetime(), D2 :: arrow_datetime()) -> Result :: arrow_compare().
 compare(D1, D2) ->
     case diff(D1, D2) of
@@ -91,6 +114,9 @@ compare(D1, D2) ->
         N when N < 0 -> -1
     end.
 
+%% @doc
+%% Check whether D2 or D2Range is in D1Range.
+%% @end
 -spec in(arrow_range(), arrow_datetime()) -> boolean();
         (arrow_range(), arrow_range()) -> boolean().
 in({_D1Start, _D1End} = D1, {D2Start, D2End}) ->
@@ -102,24 +128,42 @@ in({D1Start, D1End}, D2) ->
     CompareWithStart >= 0 andalso ComareWithEnd =< 0.
 
 
+%% @doc
+%% Add Years to Input Datetime
+%% @end
 add_years({{Year, Month, Day}, _Time}, Years) ->
     {{Year+ Years, Month, Day}, _Time}.
 
+%% @doc
+%% Add Months to Input Datetime
+%% @end
 add_months({{Year, Month, _Day}, _Time} = Datetime, Months) ->
     AddDay = do_add_months(Months, 0, {Year, Month, 0}),
     add_days(Datetime, AddDay).
 
+%% @doc
+%% Add Days to Input Datetime
+%% @end
 add_days({Date, Time}, Days) ->
     TotalDays = calendar:date_to_gregorian_days(Date) + Days,
     NewDate = calendar:gregorian_days_to_date(TotalDays),
     {NewDate, Time}.
 
+%% @doc
+%% Add Hours to Input Datetime
+%% @end
 add_hours(Datetime, Hours) ->
     add_seconds(Datetime, Hours*3600).
 
+%% @doc
+%% Add Minutes to Input Datetime
+%% @end
 add_minutes(Datetime, Minutes) ->
     add_seconds(Datetime, Minutes*60).
 
+%% @doc
+%% Add Seconds to Input Datetime
+%% @end
 add_seconds(Datetime, AddSecond) ->
     TotalSeconds = calendar:datetime_to_gregorian_seconds(Datetime) + AddSecond,
     calendar:gregorian_seconds_to_datetime(TotalSeconds).

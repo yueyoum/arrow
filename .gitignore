@@ -4,6 +4,7 @@
 *.log
 *.iml
 
+doc
 ebin
 .idea
 .rebar
