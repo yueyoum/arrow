@@ -1,9 +1,10 @@
 # Arrow
 
-erlang datetime unit
+erlang datetime unit build on `calender` module
 
 ## Types
 
+--------------------|-------------------
 arrow_compare()     |   `-1 | 0 | 1`
 arrow_datetime()    |   integer() | nonempty_string() | binary() | calendar:datetime()
 arrow_range()       |   {arrow_datetime(), arrow_datetime()}
@@ -86,3 +87,28 @@ Add Minutes to Datetime
 
 Add Seconds to Datetime
 
+
+## Example
+
+```erlang
+{{Year, Month, Day}, {Hour, Minute, Second}} = arrow:get().
+CurrentTimestamp = arrow:timestamp().
+946688461 = arrow:timestamp({{2000, 1, 1}, {1, 1, 1}}).
+946688461 = arrow:timestamp("2000-01-01 01:01:01").
+"1970-01-01 00:00:00" = arrow:format({{1970, 1, 1}, {0, 0, 0}}).
+"1970-01-01 00:00:00" = arrow:format(0).
+{{2000, 1, 1}, {1, 1, 1}} = arrow:get(946688461).
+{{9999, 12, 31}, {23, 59, 59}} = arrow:get("9999-12-31 23:59:59").
+-31536000 = arrow:diff({{1970, 1, 1}, {0, 0, 0}}, {{1971, 1, 1}, {0, 0, 0}}).
+-11837268671 = arrow:diff({{1970, 1, 1}, {0, 0, 0}}, "2345-02-09 10:11:11").
+0 = arrow:compare({{1970, 1, 1}, {0, 0, 0}}, 0).
+1 = arrow:compare({{1970, 1, 1}, {0, 0, 0}}, <<"1960-01-01 00:00:00">>).
+true = arrow:in({ {{1970, 1, 1}, {0, 0, 0}}, 100 }, "1970-01-01 00:00:10").
+false = arrow:in({ "1970-01-01 00:00:00", <<"2000-01-01 00:00:00">> }, 955127654).
+{{2000, 1, 1}, {0, 0, 0}} = arrow:add_years("2345-01-01 00:00:00", -345).
+{{2848, 6, 26}, {0, 0, 0}} = arrow:add_months({{2015, 3, 26}, {0, 0, 0}}, 9999).
+{{1987, 11, 14}, {0, 0, 0}} = arrow:add_days(1427760000, -9999).
+{{1901, 3, 2}, {9, 0, 50}} = arrow:add_hours(<<"2015-03-31 00:00:50">>, -999999).
+{{2015, 4, 1}, {22, 39, 0}} = arrow:add_minutes({{2015, 3, 26}, {0, 0, 0}}, 9999).
+{{1970, 1, 1}, {0, 1, 40}} = arrow:add_seconds({{1970, 1, 1}, {0, 0, 0}}, 100).
+```
