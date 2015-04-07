@@ -4,6 +4,7 @@ erlang datetime unit build on `calender` module
 
 ## Types
 
+Type                |   Description
 --------------------|-------------------
 arrow_compare()     |   `-1 | 0 | 1`
 arrow_datetime()    |   integer() | nonempty_string() | binary() | calendar:datetime()
