@@ -20,7 +20,9 @@ timestamp_test_() ->
         ?_assertEqual(arrow:timestamp({{4444, 4, 4}, {4, 44, 44}}), 78080042684),
         ?_assertEqual(arrow:timestamp({{9999, 12, 31}, {23, 59, 59}}), 253402300799),
         ?_assertEqual(arrow:timestamp({{999, 12, 31}, {23, 59, 59}}), -30610224001),
-        ?_assertEqual(arrow:timestamp({{1, 1, 1}, {0, 0, 0}}), -62135596800)
+        ?_assertEqual(arrow:timestamp({{1, 1, 1}, {0, 0, 0}}), -62135596800),
+
+        ?_assertEqual(arrow:timestamp("2000-01-01 01:01:01"), 946688461)
     ].
 
 
