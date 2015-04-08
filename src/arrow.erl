@@ -65,11 +65,10 @@ timestamp(Datetime) ->
 %% Format given time to format `YYYY-MM-DD HH:mm:ss'
 %% @end
 -spec format(Input) -> DateString when
-        Input           :: integer() | calendar:datetime(),
+        Input           :: arrow_datetime(),
         DateString      :: nonempty_string().
-format(Input) when is_integer(Input)->
-    format(unix_timestamp_to_datetime(Input));
-format({{Year, Month, Day}, {Hour, Minute, Second}}) ->
+format(Input) ->
+    {{Year, Month, Day}, {Hour, Minute, Second}} = arrow:get(Input),
     Text = io_lib:fwrite("~4..0b-~2..0b-~2..0b ~2..0b:~2..0b:~2..0b",
         [Year, Month, Day, Hour, Minute, Second]
     ),
