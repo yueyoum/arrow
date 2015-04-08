@@ -89,8 +89,8 @@ get() ->
 -spec get(Input) -> Datetime when
         Input       :: arrow_datetime(),
         Datetime    :: calendar:datetime().
-get(Timestamp) when is_integer(Timestamp) ->
-    unix_timestamp_to_datetime(Timestamp);
+get(UnixTimestamp) when is_integer(UnixTimestamp) ->
+    unix_timestamp_to_datetime(UnixTimestamp);
 
 get(DateString) when is_list(DateString) andalso length(DateString) == 19 ->
     {ok, [Year, Month, Day, Hour, Minute, Second], []} = io_lib:fread("~d-~d-~d ~d:~d:~d", DateString),
