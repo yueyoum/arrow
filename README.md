@@ -1,6 +1,17 @@
 # Arrow
 
-erlang datetime unit build on `calender` module
+erlang datetime utils build on `calender` module
+
+## Installation
+
+Add arrow as a dependency to your rebar.config
+
+```
+{deps, [
+    {arrow, ".*",
+        {git, "https://github.com/yueyoum/arrow.git", {branch, "master"}}}
+]}.
+```
 
 ## Types
 
